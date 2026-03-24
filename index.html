@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wundversorgung – Vorbereitungstest</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --card: #1c2128;
+    --border: #30363d;
+    --accent: #58a6ff;
+    --accent2: #3fb950;
+    --danger: #f85149;
+    --warn: #d29922;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    padding: 24px 16px 60px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 36px;
+  }
+
+  header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(22px, 5vw, 36px);
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.5px;
+  }
+
+  header p {
+    color: var(--muted);
+    font-size: 14px;
+    margin-top: 6px;
+  }
+
+  .progress-bar-wrap {
+    background: var(--border);
+    border-radius: 99px;
+    height: 6px;
+    max-width: 600px;
+    margin: 16px auto 0;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 99px;
+    transition: width 0.5s cubic-bezier(.4,0,.2,1);
+  }
+
+  .quiz-container {
+    max-width: 680px;
+    margin: 0 auto;
+  }
+
+  .question-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 24px;
+    margin-bottom: 20px;
+    animation: slideIn 0.35s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .question-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .q-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .q-number {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+    background: rgba(88,166,255,0.1);
+    padding: 3px 10px;
+    border-radius: 99px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .q-tag {
+    font-size: 11px;
+    color: var(--muted);
+    background: var(--surface);
+    padding: 3px 10px;
+    border-radius: 99px;
+  }
+
+  .question-text {
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    color: var(--text);
+  }
+
+  /* MC Options */
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .option {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--text);
+    transition: all 0.18s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-align: left;
+  }
+
+  .option:hover:not(.disabled) {
+    border-color: var(--accent);
+    background: rgba(88,166,255,0.06);
+  }
+
+  .option.selected {
+    border-color: var(--accent);
+    background: rgba(88,166,255,0.1);
+  }
+
+  .option.correct {
+    border-color: var(--accent2);
+    background: rgba(63,185,80,0.12);
+    color: var(--accent2);
+  }
+
+  .option.wrong {
+    border-color: var(--danger);
+    background: rgba(248,81,73,0.1);
+    color: var(--danger);
+  }
+
+  .option-letter {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    background: var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .option.correct .option-letter { background: var(--accent2); color: #000; }
+  .option.wrong .option-letter { background: var(--danger); color: #fff; }
+  .option.selected .option-letter { background: var(--accent); color: #000; }
+
+  /* Fill-in */
+  .fill-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 14px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+
+  .fill-input:focus { border-color: var(--accent); }
+  .fill-input.correct-input { border-color: var(--accent2); background: rgba(63,185,80,0.08); }
+  .fill-input.wrong-input { border-color: var(--danger); background: rgba(248,81,73,0.08); }
+
+  /* Order */
+  .order-item {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 11px 16px;
+    cursor: grab;
+    font-size: 14px;
+    display: flex; align-items: center; gap: 12px;
+    user-select: none;
+    transition: background 0.15s, border-color 0.15s;
+    margin-bottom: 8px;
+  }
+
+  .order-item:active { cursor: grabbing; opacity: 0.7; }
+  .order-item.drag-over { border-color: var(--accent); background: rgba(88,166,255,0.08); }
+
+  .order-num {
+    width: 24px; height: 24px;
+    border-radius: 6px;
+    background: var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+    color: var(--muted);
+  }
+
+  /* Feedback */
+  .feedback {
+    margin-top: 14px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.5;
+    display: none;
+  }
+
+  .feedback.show { display: block; }
+  .feedback.correct { background: rgba(63,185,80,0.1); border: 1px solid rgba(63,185,80,0.3); color: var(--accent2); }
+  .feedback.wrong   { background: rgba(248,81,73,0.08); border: 1px solid rgba(248,81,73,0.25); color: #ff7b72; }
+
+  /* Buttons */
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.18s;
+  }
+
+  .btn-check {
+    background: var(--accent);
+    color: #000;
+  }
+
+  .btn-check:hover { filter: brightness(1.15); }
+  .btn-check:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-next {
+    background: var(--surface);
+    color: var(--text);
+    border: 1.5px solid var(--border);
+  }
+
+  .btn-next:hover { border-color: var(--accent); }
+
+  /* Score Screen */
+  .score-screen {
+    text-align: center;
+    padding: 48px 24px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    display: none;
+  }
+
+  .score-screen.show { display: block; }
+
+  .score-big {
+    font-family: 'Syne', sans-serif;
+    font-size: 72px;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1;
+  }
+
+  .score-label {
+    font-size: 14px;
+    color: var(--muted);
+    margin-top: 8px;
+    margin-bottom: 28px;
+  }
+
+  .score-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+
+  .score-stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 8px;
+  }
+
+  .score-stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+  }
+
+  .stat-correct { color: var(--accent2); }
+  .stat-wrong   { color: var(--danger); }
+  .stat-total   { color: var(--accent); }
+
+  .score-stat-label {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .btn-restart {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #000;
+    padding: 12px 32px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: filter 0.2s;
+  }
+
+  .btn-restart:hover { filter: brightness(1.1); }
+
+  .counter-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 680px;
+    margin: 0 auto 20px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .topic-badge {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🩹 Wundversorgung Quiz</h1>
+  <p>CE5 · LE3 · Vorbereitungstest</p>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progressBar" style="width:0%"></div>
+  </div>
+</header>
+
+<div class="quiz-container">
+  <div class="counter-row">
+    <span id="qCounter">Frage 1 von 20</span>
+    <span class="topic-badge" id="qTopic">Wundarten</span>
+  </div>
+
+  <div id="quizArea"></div>
+  <div class="score-screen" id="scoreScreen"></div>
+</div>
+
+<script>
+const questions = [
+  // --- AKUTE & CHRONISCHE WUNDEN ---
+  {
+    id: 1,
+    topic: "Wundarten",
+    type: "mc",
+    question: "Welche Aussage beschreibt eine <strong>akute Wunde</strong> korrekt?",
+    options: [
+      "Zeigt nach 4–8 Wochen keine Heilungstendenz",
+      "Entsteht durch plötzliche äußere Einwirkung und verschließt sich in 2–3 Wochen",
+      "Ist immer ein Symptom einer systematischen Erkrankung",
+      "Wird nach Farbe klassifiziert"
+    ],
+    correct: 1,
+    explain: "Akute Wunden entstehen durch plötzliche äußere Einwirkung (z.B. Schnittwunde, Verbrennung) und heilen in der Regel innerhalb von 2–3 Wochen ohne Komplikationen."
+  },
+  {
+    id: 2,
+    topic: "Wundarten",
+    type: "mc",
+    question: "Ab welchem Zeitraum gilt eine Wunde als <strong>chronisch</strong>?",
+    options: [
+      "Nach 1–2 Wochen ohne Heilung",
+      "Nach 4–8 Wochen ohne Heilungstendenz",
+      "Nach 6 Monaten ohne Heilung",
+      "Sofort wenn sie infiziert ist"
+    ],
+    correct: 1,
+    explain: "Eine chronische Wunde zeigt nach 4–8 Wochen keine Heilungstendenz und ist oft Symptom einer tieferliegenden systematischen Erkrankung."
+  },
+  {
+    id: 3,
+    topic: "Wundarten",
+    type: "mc",
+    question: "Welche der folgenden Wunden zählt zu den <strong>chronischen Wunden</strong>?",
+    options: [
+      "Schürfwunde",
+      "Bisswunde",
+      "Dekubitus",
+      "Operationswunde"
+    ],
+    correct: 2,
+    explain: "Dekubitus, Ulcus cruris und diabetisches Fußsyndrom sind typische chronische Wunden. Schürf- und Bisswunden sind akute Wunden."
+  },
+  {
+    id: 4,
+    topic: "Wundarten",
+    type: "mc",
+    question: "Welches Merkmal ist typisch für chronische Wunden?",
+    options: [
+      "Heilt ohne Komplikation in 2 Wochen",
+      "Wird nicht klassifiziert",
+      "Granulationsgewebe wirkt oft ungesund",
+      "Normale inflammatorische Phase"
+    ],
+    correct: 2,
+    explain: "Chronische Wunden sind gekennzeichnet durch ungesund aussehendes Granulationsgewebe, statischen Wundzustand, starken Wundgeruch und langen Heilungsprozess (>6 Wochen)."
+  },
+
+  // --- WUNDZYKLUS / 6 SCHRITTE ---
+  {
+    id: 5,
+    topic: "Wundzyklus",
+    type: "order",
+    question: "Bringe die <strong>6 Schritte des Wundzyklus</strong> in die richtige Reihenfolge (Drag & Drop):",
+    items: [
+      "Wundevaluation",
+      "Wundbeobachtung",
+      "Wundbehandlung",
+      "Wundanamnese",
+      "Wundbeurteilung",
+      "Wunddokumentation"
+    ],
+    correct: [
+      "Wundanamnese",
+      "Wundbeobachtung",
+      "Wundbeurteilung",
+      "Wundbehandlung",
+      "Wunddokumentation",
+      "Wundevaluation"
+    ],
+    explain: "Die korrekte Reihenfolge: 1) Wundanamnese → 2) Wundbeobachtung → 3) Wundbeurteilung → 4) Wundbehandlung → 5) Wunddokumentation → 6) Wundevaluation"
+  },
+  {
+    id: 6,
+    topic: "Wundzyklus",
+    type: "mc",
+    question: "Was wird bei der <strong>Wundbeobachtung</strong> beurteilt? (Wähle die vollständigste Antwort)",
+    options: [
+      "Nur die Wundgröße",
+      "Lokalisation, Wundgröße, -tiefe, -zustand, -geruch, Wundrand, umgebende Haut",
+      "Entstehungsursache und Wundheilungsphase",
+      "Medikamente und Allergien des Patienten"
+    ],
+    correct: 1,
+    explain: "Die Wundbeobachtung umfasst: Lokalisation, Wundgröße/-fläche, Wundtiefe, Wundzustand, Wundgeruch, Wundrand und Zustand der umgebenden Haut."
+  },
+  {
+    id: 7,
+    topic: "Wunzdokumentation",
+    type: "mc",
+    question: "Was gehört NICHT in die <strong>Wunddokumentation</strong>?",
+    options: [
+      "Wundverlauf anhand von Fotografien",
+      "Wundschmerz des Patienten",
+      "Diagnose der Grunderkrankung durch die Pflegeperson",
+      "Evaluation des Heilungsverlaufs"
+    ],
+    correct: 2,
+    explain: "Die Pflegeperson dokumentiert Wundverlauf, -behandlung, Wundschmerz und Patientenbefinden – aber keine ärztliche Diagnose. Das Stellen von Diagnosen ist nicht Aufgabe der Pflege."
+  },
+
+  // --- WUNDHEILUNGSPHASEN ---
+  {
+    id: 8,
+    topic: "Wundheilungsphasen",
+    type: "mc",
+    question: "In welcher Wundheilungsphase wandern Leukozyten (Neutrophile, Makrophagen) ein?",
+    options: [
+      "Differenzierungsphase",
+      "Granulationsphase",
+      "Inflammationsphase / Reinigungsphase",
+      "Epithelisierungsphase"
+    ],
+    correct: 2,
+    explain: "In der Inflammationsphase (bis ca. 3. Tag) erhöht sich die Kapillarpermeabilität → Vasodilatation → Einwanderung von Leukozyten (neutrophile Granulozyten, Lymphozyten, Makrophagen) zur Wundreinigung."
+  },
+  {
+    id: 9,
+    topic: "Wundheilungsphasen",
+    type: "mc",
+    question: "Ab welchem Tag beginnt die <strong>Granulationsphase</strong>?",
+    options: ["1. Tag", "4. Tag", "6. Tag", "10. Tag"],
+    correct: 1,
+    explain: "Die Granulationsphase beginnt ab dem 4. Tag. Fibroblasten nutzen das Blutgerinnsel als Matrix; Wachstumsfaktoren stimulieren Zell- und Gefäßneubildung."
+  },
+  {
+    id: 10,
+    topic: "Wundheilungsphasen",
+    type: "mc",
+    question: "Was passiert in der <strong>Differenzierungsphase (Epithelisierungsphase)</strong>?",
+    options: [
+      "Blutstillung und Blutgerinnung",
+      "Einwanderung von Leukozyten",
+      "Ausreifung kollagener Fasern, Wundkontraktion, Narbengewebsbildung",
+      "Zellteilung zur Gefäßneubildung durch Fibroblasten"
+    ],
+    correct: 2,
+    explain: "Ab dem 6.–10. Tag reifen kollagene Fasern aus, die Wunde kontrahiert, Granulationsgewebe bildet sich zu Narbengewebe um, und Epidermiszellen entstehen durch Mitose."
+  },
+  {
+    id: 11,
+    topic: "Wundheilungsphasen",
+    type: "fill",
+    question: "Ergänze: Die Reinigungsphase/Inflammationsphase dauert unter physiologischen Bedingungen ca. <strong>___</strong> Tage.",
+    correct: ["3", "drei"],
+    explain: "Die Inflammationsphase dauert ca. 3 Tage. Sie beginnt mit der Verletzung und endet nach erfolgreicher Wundreinigung durch Immunzellen."
+  },
+
+  // --- WUNDINFEKTIONEN / STÖRUNGEN ---
+  {
+    id: 12,
+    topic: "Wundheilungsstörungen",
+    type: "mc",
+    question: "Was ist ein <strong>Keloid</strong>?",
+    options: [
+      "Eine tiefgehende eitrige Infektion eines Haarfollikels",
+      "Eine Ansammlung von Blut im Gewebe",
+      "Eine überschießende Narbenbildung, die über die ursprünglichen Wundgrenzen hinauswächst",
+      "Eine Infektion durch Staphylokokken"
+    ],
+    correct: 2,
+    explain: "Ein Keloid ist überschießende Narbenbildung (Bindegewebe wächst über die Wundgrenzen hinaus). Ursachen sind unklar; Hemmung durch Kortison oder Bestrahlung möglich."
+  },
+  {
+    id: 13,
+    topic: "Wundheilungsstörungen",
+    type: "mc",
+    question: "Welche der folgenden zählen zu den <strong>4 lokalen Wundheilungsstörungen</strong>?",
+    options: [
+      "Infektion, Hämatom, Keloid, Furunkel",
+      "Infektion, Dekubitus, Ulcus cruris, Hämatom",
+      "Keloid, Ödem, Furunkel, Abszess",
+      "Hämatom, Thrombose, Embolie, Infektion"
+    ],
+    correct: 0,
+    explain: "Die 4 lokalen Wundheilungsstörungen sind: Infektion, Hämatom, Keloid und Furunkel."
+  },
+  {
+    id: 14,
+    topic: "Wundheilungsstörungen",
+    type: "mc",
+    question: "Was ist die Therapie bei einem <strong>Furunkel</strong>?",
+    options: [
+      "Kortison und Bestrahlung",
+      "Feuchte Verbände, evtl. Ausräumung, Antibiotikum",
+      "Sofortige Operation",
+      "Resorption abwarten, keine Therapie nötig"
+    ],
+    correct: 1,
+    explain: "Ein Furunkel (tiefgehende eitrige Infektion eines Haarfollikels) wird mit feuchten Verbänden, evtl. Ausräumung und einem Antibiotikum (AB) behandelt."
+  },
+
+  // --- HYGIENE / VERBANDWECHSEL ---
+  {
+    id: 15,
+    topic: "Hygiene VW",
+    type: "mc",
+    question: "Welche Reihenfolge ist beim Verbandwechsel (Hygiene) korrekt?",
+    options: [
+      "Neuen Verband anlegen → Alten entfernen → Händedesinfektion",
+      "Alten Verband mit Handschuhen entfernen → Händedesinfektion → neue Handschuhe",
+      "Händedesinfektion → Alten Verband entfernen → kein Handschuhwechsel nötig",
+      "Alten Verband mit bloßen Händen entfernen → dann Handschuhe"
+    ],
+    correct: 1,
+    explain: "Korrekte Reihenfolge: Alten Verband mit Handschuhen (HS) entfernen → Händedesinfektion (HD) → neue Handschuhe anlegen. Nach Beendigung des VW folgt erneut hygienische Händedesinfektion."
+  },
+  {
+    id: 16,
+    topic: "Hygiene VW",
+    type: "mc",
+    question: "Warum soll das Fenster beim Verbandwechsel geschlossen sein?",
+    options: [
+      "Für die Intimsphäre des Patienten",
+      "Um Kontamination durch Luftbewegung / Verwirbelung von Keimen zu verringern",
+      "Damit es dem Patienten warm genug ist",
+      "Um Lärm zu reduzieren"
+    ],
+    correct: 1,
+    explain: "Geschlossene Fenster reduzieren Luftbewegungen, die Krankheitserreger aufwirbeln und in die Wunde einbringen könnten."
+  },
+  {
+    id: 17,
+    topic: "Hygiene VW",
+    type: "mc",
+    question: "In welcher Reihenfolge werden Wunden versorgt?",
+    options: [
+      "Septische Wunden vor aseptischen Wunden",
+      "Chronische vor akuten Wunden",
+      "Aseptische Wunden vor septischen Wunden",
+      "Reihenfolge ist beliebig"
+    ],
+    correct: 2,
+    explain: "Aseptische (keimfreie) Wunden werden immer vor septischen (infizierten) Wunden versorgt, um Kreuzkontamination zu vermeiden."
+  },
+
+  // --- WUNDSEKRET ---
+  {
+    id: 18,
+    topic: "Wundsekret",
+    type: "mc",
+    question: "Welche Aussehensformen von Wundexsudat sind bekannt?",
+    options: [
+      "Gelb, Rot, Grün, Blau",
+      "Serös, blutig-serös, blutig, purulent",
+      "Klar, trüb, eitrig",
+      "Trocken, feucht, nass"
+    ],
+    correct: 1,
+    explain: "Das Aussehen von Wundsekret wird beschrieben als: serös, blutig-serös, blutig oder purulent (eitrig)."
+  },
+
+  // --- HAUTSCHICHTEN ---
+  {
+    id: 19,
+    topic: "Anatomie Haut",
+    type: "mc",
+    question: "Welche ist die <strong>korrekte Reihenfolge</strong> der Hautschichten von oben nach unten?",
+    options: [
+      "Dermis → Epidermis → Subkutis → Muskulatur",
+      "Epidermis → Subkutis → Dermis → Muskulatur",
+      "Epidermis (Oberhaut) → Dermis → Subkutis → Muskulatur",
+      "Subkutis → Dermis → Epidermis → Muskulatur"
+    ],
+    correct: 2,
+    explain: "Von außen nach innen: Epidermis (Oberhaut) → Dermis → Subkutis → Muskulatur. Merkel-Zellen befinden sich in der Epidermis."
+  },
+
+  // --- WUNDANAMNESE ---
+  {
+    id: 20,
+    topic: "Wundanamnese",
+    type: "mc",
+    question: "Was wird bei der <strong>Wundanamnese</strong> erhoben? (Wähle die umfassendste Antwort)",
+    options: [
+      "Nur aktuelle Medikamente und Allergien",
+      "Nur psychologischer Status und Mobilität",
+      "Wundgeschichte, Lebensqualität, Schmerz, Ressourcen, Vorerkrankungen, Medikamente, Ernährung, Mobilität u.v.m.",
+      "Nur Entstehungsursache der Wunde"
+    ],
+    correct: 2,
+    explain: "Die Wundanamnese ist umfassend: Sie beinhaltet Wundgeschichte, Lebensqualität, Schmerzwahrnehmung, Ressourcen, Compliance, Vorerkrankungen, aktuelle Erkrankungen, Medikamente/Allergien, Ernährungszustand, Lebensstil, Mobilität und psychologischen Status."
+  }
+];
+
+// ---- STATE ----
+let currentQ = 0;
+let score = 0;
+let answered = new Array(questions.length).fill(false);
+let results = new Array(questions.length).fill(null);
+
+// drag state
+let dragSrc = null;
+
+function renderQuestion() {
+  const q = questions[currentQ];
+  document.getElementById('qCounter').textContent = `Frage ${currentQ + 1} von ${questions.length}`;
+  document.getElementById('qTopic').textContent = q.topic;
+  document.getElementById('progressBar').style.width = `${(currentQ / questions.length) * 100}%`;
+
+  let html = `
+    <div class="question-card" id="qCard">
+      <div class="q-meta">
+        <span class="q-number">F ${String(currentQ + 1).padStart(2,'0')}</span>
+        <span class="q-tag">${q.type === 'mc' ? 'Multiple Choice' : q.type === 'fill' ? 'Lückentext' : 'Reihenfolge'}</span>
+      </div>
+      <div class="question-text">${q.question}</div>
+  `;
+
+  if (q.type === 'mc') {
+    html += `<div class="options">`;
+    const letters = ['A','B','C','D'];
+    q.options.forEach((opt, i) => {
+      html += `
+        <button class="option" data-idx="${i}" onclick="selectOption(${i})">
+          <span class="option-letter">${letters[i]}</span>
+          <span>${opt}</span>
+        </button>`;
+    });
+    html += `</div>`;
+  } else if (q.type === 'fill') {
+    html += `<input class="fill-input" id="fillInput" type="text" placeholder="Antwort eingeben…" onkeydown="if(event.key==='Enter')checkAnswer()">`;
+  } else if (q.type === 'order') {
+    // shuffle for display
+    const shuffled = [...q.items].sort(() => Math.random() - 0.5);
+    html += `<div id="orderList">`;
+    shuffled.forEach((item, i) => {
+      html += `
+        <div class="order-item" draggable="true" data-item="${item}"
+          ondragstart="dragStart(event)" ondragover="dragOver(event)"
+          ondragend="dragEnd(event)" ondrop="drop(event)">
+          <span class="order-num">${i+1}</span>
+          <span>${item}</span>
+        </div>`;
+    });
+    html += `</div>`;
+  }
+
+  html += `
+      <div class="feedback" id="feedback"></div>
+      <div class="btn-row">
+        <button class="btn btn-check" id="btnCheck" onclick="checkAnswer()">Überprüfen</button>
+        <button class="btn btn-next hidden" id="btnNext" onclick="nextQuestion()">
+          ${currentQ < questions.length - 1 ? 'Nächste Frage →' : 'Ergebnis anzeigen →'}
+        </button>
+      </div>
+    </div>`;
+
+  document.getElementById('quizArea').innerHTML = html;
+}
+
+function selectOption(idx) {
+  if (answered[currentQ]) return;
+  document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+  document.querySelectorAll('.option')[idx].classList.add('selected');
+}
+
+function checkAnswer() {
+  if (answered[currentQ]) return;
+  const q = questions[currentQ];
+  const fb = document.getElementById('feedback');
+  const btnNext = document.getElementById('btnNext');
+  const btnCheck = document.getElementById('btnCheck');
+
+  answered[currentQ] = true;
+  btnCheck.disabled = true;
+  btnNext.classList.remove('hidden');
+
+  if (q.type === 'mc') {
+    const selected = document.querySelector('.option.selected');
+    if (!selected) { answered[currentQ] = false; btnCheck.disabled = false; btnNext.classList.add('hidden'); return; }
+    const idx = parseInt(selected.dataset.idx);
+    if (idx === q.correct) {
+      selected.classList.add('correct');
+      results[currentQ] = true; score++;
+      fb.className = 'feedback correct show';
+      fb.textContent = '✓ Richtig! ' + q.explain;
+    } else {
+      selected.classList.add('wrong');
+      document.querySelectorAll('.option')[q.correct].classList.add('correct');
+      results[currentQ] = false;
+      fb.className = 'feedback wrong show';
+      fb.textContent = '✗ Falsch. ' + q.explain;
+    }
+    document.querySelectorAll('.option').forEach(o => o.classList.add('disabled'));
+  } else if (q.type === 'fill') {
+    const inp = document.getElementById('fillInput');
+    const val = inp.value.trim().toLowerCase();
+    const corrects = q.correct.map(c => c.toLowerCase());
+    if (corrects.includes(val)) {
+      inp.classList.add('correct-input');
+      results[currentQ] = true; score++;
+      fb.className = 'feedback correct show';
+      fb.textContent = '✓ Richtig! ' + q.explain;
+    } else {
+      inp.classList.add('wrong-input');
+      results[currentQ] = false;
+      fb.className = 'feedback wrong show';
+      fb.textContent = `✗ Falsch. Korrekte Antwort: ${q.correct[0]}. ` + q.explain;
+    }
+    inp.readOnly = true;
+  } else if (q.type === 'order') {
+    const items = document.querySelectorAll('.order-item');
+    const userOrder = Array.from(items).map(i => i.dataset.item);
+    const isCorrect = JSON.stringify(userOrder) === JSON.stringify(q.correct);
+    if (isCorrect) {
+      results[currentQ] = true; score++;
+      fb.className = 'feedback correct show';
+      fb.textContent = '✓ Richtig! ' + q.explain;
+    } else {
+      results[currentQ] = false;
+      fb.className = 'feedback wrong show';
+      fb.textContent = '✗ Falsch. ' + q.explain;
+    }
+  }
+}
+
+function nextQuestion() {
+  currentQ++;
+  if (currentQ >= questions.length) {
+    showScore();
+  } else {
+    renderQuestion();
+  }
+}
+
+function showScore() {
+  document.getElementById('quizArea').innerHTML = '';
+  document.getElementById('qCounter').textContent = '';
+  document.getElementById('qTopic').textContent = '';
+  document.getElementById('progressBar').style.width = '100%';
+  const pct = Math.round((score / questions.length) * 100);
+  const wrong = questions.length - score;
+  let msg = pct >= 80 ? '🎉 Ausgezeichnet! Bestanden.' : pct >= 60 ? '👍 Gut gemacht! Noch etwas üben.' : '📚 Weiterüben – du schaffst das!';
+  const sc = document.getElementById('scoreScreen');
+  sc.innerHTML = `
+    <div class="score-big">${pct}%</div>
+    <div class="score-label">${msg}</div>
+    <div class="score-grid">
+      <div class="score-stat">
+        <div class="score-stat-num stat-correct">${score}</div>
+        <div class="score-stat-label">Richtig</div>
+      </div>
+      <div class="score-stat">
+        <div class="score-stat-num stat-wrong">${wrong}</div>
+        <div class="score-stat-label">Falsch</div>
+      </div>
+      <div class="score-stat">
+        <div class="score-stat-num stat-total">${questions.length}</div>
+        <div class="score-stat-label">Gesamt</div>
+      </div>
+    </div>
+    <button class="btn-restart" onclick="restartQuiz()">🔄 Nochmal versuchen</button>
+  `;
+  sc.classList.add('show');
+}
+
+function restartQuiz() {
+  currentQ = 0; score = 0;
+  answered = new Array(questions.length).fill(false);
+  results = new Array(questions.length).fill(null);
+  document.getElementById('scoreScreen').classList.remove('show');
+  renderQuestion();
+}
+
+// Drag & Drop
+function dragStart(e) {
+  dragSrc = e.currentTarget;
+  e.dataTransfer.effectAllowed = 'move';
+}
+
+function dragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  document.querySelectorAll('.order-item').forEach(i => i.classList.remove('drag-over'));
+  e.currentTarget.classList.add('drag-over');
+}
+
+function dragEnd(e) {
+  document.querySelectorAll('.order-item').forEach(i => i.classList.remove('drag-over'));
+}
+
+function drop(e) {
+  e.preventDefault();
+  if (dragSrc !== e.currentTarget) {
+    const list = document.getElementById('orderList');
+    const items = Array.from(list.querySelectorAll('.order-item'));
+    const srcIdx = items.indexOf(dragSrc);
+    const tgtIdx = items.indexOf(e.currentTarget);
+    if (srcIdx < tgtIdx) {
+      list.insertBefore(dragSrc, e.currentTarget.nextSibling);
+    } else {
+      list.insertBefore(dragSrc, e.currentTarget);
+    }
+    // Update numbers
+    list.querySelectorAll('.order-item').forEach((item, i) => {
+      item.querySelector('.order-num').textContent = i + 1;
+    });
+  }
+}
+
+// Init
+renderQuestion();
+</script>
+</body>
+</html>
